@@ -1,1 +1,0 @@
-# mehmetriza.github.io
