@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mrblog — Minimal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --black: #000000;
+            --dark-gray: #1a1a1a;
+            --gray: #666666;
+            --light-gray: #cccccc;
+            --white: #ffffff;
+            --border: #e5e5e5;
+            --accent: #000000;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            background: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+            overflow-x: hidden;
+            font-size: 15px;
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .logo {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .filter-tags {
+            margin-left: auto;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .tag-filter {
+            font-size: 13px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .tag-filter:hover {
+            color: var(--black);
+            background: var(--border);
+        }
+        
+        .tag-filter.active {
+            color: var(--white);
+            background: var(--black);
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+        }
+        
+        /* Post List */
+        .post-list {
+            list-style: none;
+        }
+        
+        .post-item {
+            border-bottom: 1px solid var(--border);
+            padding: 30px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .post-item:hover {
+            padding-left: 10px;
+        }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .post-title {
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+            transition: all 0.2s ease;
+        }
+        
+        .post-item:hover .post-title {
+            color: var(--dark-gray);
+        }
+        
+        .post-meta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .post-date {
+            font-size: 13px;
+            color: var(--gray);
+            font-family: var(--font-mono);
+        }
+        
+        .post-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            font-size: 12px;
+            color: var(--gray);
+            padding: 2px 8px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        
+        .tag:hover {
+            border-color: var(--black);
+            color: var(--black);
+        }
+        
+        .post-excerpt {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.7;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            margin-top: 0;
+        }
+        
+        .post-item.expanded .post-excerpt {
+            max-height: 100px;
+            margin-top: 15px;
+        }
+        
+        /* Full Article View */
+        .article-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--white);
+            z-index: 200;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+        
+        .article-view.active {
+            transform: translateY(0);
+        }
+        
+        .article-header {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 201;
+        }
+        
+        .back-button {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--white);
+        }
+        
+        .back-button:hover {
+            border-color: var(--black);
+            background: var(--black);
+            color: var(--white);
+        }
+        
+        .article-content {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        
+        .article-content h1, .article-content h3 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        
+        .article-content .article-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        .article-content h2 {
+            font-size: 24px;
+            font-weight: 500;
+            margin: 40px 0 20px;
+        }
+        
+        .article-content h3 {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 30px 0 15px;
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+        }
+        
+        .article-content pre {
+            background: #f8f8f8;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 25px 0;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+        
+        .article-content code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .article-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        /* Keyboard Navigation Hint */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 12px;
+            color: var(--gray);
+            font-family: var(--font-mono);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .keyboard-hint.visible {
+            opacity: 1;
+        }
+        
+        /* Search Box */
+        .search-box {
+            position: fixed;
+            top: 10px;
+            right: 350px;
+            z-index: 101;
+        }
+        
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            width: 200px;
+            font-family: var(--font-main);
+            background: var(--white);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--black);
+        }
+        
+        /* Post counter */
+        .post-counter {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 20px;
+            font-family: var(--font-mono);
+        }
+        
+        /* Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .post-item {
+            animation: slideUp 0.5s ease forwards;
+            opacity: 0;
+        }
+        
+        .post-item:nth-child(1) { animation-delay: 0.05s; }
+        .post-item:nth-child(2) { animation-delay: 0.1s; }
+        .post-item:nth-child(3) { animation-delay: 0.15s; }
+        .post-item:nth-child(4) { animation-delay: 0.2s; }
+        .post-item:nth-child(5) { animation-delay: 0.25s; }
+        .post-item:nth-child(6) { animation-delay: 0.3s; }
+        .post-item:nth-child(7) { animation-delay: 0.35s; }
+        .post-item:nth-child(8) { animation-delay: 0.4s; }
+        .post-item:nth-child(9) { animation-delay: 0.45s; }
+        .post-item:nth-child(10) { animation-delay: 0.5s; }
+        .post-item:nth-child(11) { animation-delay: 0.55s; }
+        .post-item:nth-child(12) { animation-delay: 0.6s; }
+        .post-item:nth-child(13) { animation-delay: 0.65s; }
+        .post-item:nth-child(14) { animation-delay: 0.7s; }
+        .post-item:nth-child(15) { animation-delay: 0.75s; }
+        .post-item:nth-child(16) { animation-delay: 0.8s; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+                height: auto;
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+            
+            .container {
+                padding: 80px 20px 40px;
+            }
+            
+            .post-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .filter-tags {
+                display: none;
+            }
+            
+            .search-box {
+                display: none;
+            }
+            
+            .article-content {
+                padding: 40px 20px;
+            }
+        }
+        
+        /* Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --black: #ffffff;
+                --dark-gray: #e5e5e5;
+                --gray: #999999;
+                --light-gray: #333333;
+                --white: #000000;
+                --border: #222222;
+            }
+            
+            .article-content pre {
+                background: #0a0a0a;
+            }
+            
+            .article-content code {
+                background: #1a1a1a;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Mrblog</div>
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Ara..." id="searchInput">
+        </div>
+        <div class="filter-tags">
+            <span class="tag-filter active" data-tag="all">#all</span>
+            <span class="tag-filter" data-tag="php">#php</span>
+            <span class="tag-filter" data-tag="laravel">#laravel</span>
+            <span class="tag-filter" data-tag="sql">#sql</span>
+            <span class="tag-filter" data-tag="oracle">#oracle</span>
+            <span class="tag-filter" data-tag="linux">#linux</span>
+            <span class="tag-filter" data-tag="patterns">#patterns</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="post-counter" id="postCounter"></div>
+        <ul class="post-list" id="postList">
+            <!-- Posts will be generated here -->
+        </ul>
+    </div>
+
+    <div class="article-view" id="articleView">
+        <div class="article-header">
+            <div class="back-button" id="backButton">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M10 12L6 8L10 4"/>
+                </svg>
+            </div>
+            <div class="logo">Mrblog</div>
+        </div>
+        <div class="article-content" id="articleContent">
+            <!-- Article content will be loaded here -->
+        </div>
+    </div>
+
+    <div class="keyboard-hint" id="keyboardHint">
+        ESC: Kapat | ←→: Önceki/Sonraki | /: Arama
+    </div>
+
+    <script>
+        // Blog posts data - index.html'den alınan tüm içerikler
+        const posts = [
+            {
+                id: 1,
+                title: "PHP IteratorAggregate Kullanımı",
+                date: "2024-01-15",
+                tags: ["php", "iterator", "patterns"],
+                excerpt: "PHP'de IteratorAggregate interface'ini kullanarak koleksiyonları nasıl iterasyon yapılabilir hale getirebileceğinizi öğrenin.",
+                content: `
+                    <h3>PHP IteratorAggregate Kullanımı</h3>
+                    <div class="article-meta">
+                        <span>15 Ocak 2024</span>
+                        <span>#php #iterator #patterns</span>
+                    </div>
+                    <p>PHP'de koleksiyonları iterasyon yapılabilir hale getirmek için <code>IteratorAggregate</code> interface'ini kullanabilirsiniz.</p>
+                    
+                    <pre><code>class Products implements \\IteratorAggregate
+{
+    private $products = [];
+    
+    public function add(Product $product) : void {
+        $this->products[] = $product;
+    }
+    
+    public function getIterator() : \\Traversable {
+        return new \\ArrayIterator($this->products);
+    }
+}</code></pre>
+                    
+                    <p>Bu yapı sayesinde <code>Products</code> sınıfını <code>foreach</code> döngüsünde kullanabilirsiniz.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "PHP Fonksiyon İçerisinde Sınıf Tanımlamak",
+                date: "2024-01-28",
+                tags: ["php", "oop"],
+                excerpt: "PHP'de fonksiyonların içerisinde anonim sınıflar tanımlayarak esnek yapılar oluşturun.",
+                content: `
+                    <h3>PHP Fonksiyon İçerisinde Sınıf Tanımlamak</h3>
+                    <div class="article-meta">
+                        <span>28 Ocak 2024</span>
+                        <span>#php #oop</span>
+                    </div>
+                    <p>PHP'de fonksiyonların içerisinde anonim sınıflar tanımlayabilir ve kullanabilirsiniz.</p>
+                    
+                    <pre><code>function session($param) {
+    return new class($param) {
+        private $param;
+
+        public function __construct($param) {
+            $this->param = $param;
+        }
+        
+        public function push($n) {
+            return "{$this->param} ile kesildi. Kesilen sayı: $n";
+        }
+
+        public function __toString() {
+            return "Bu bir anonim sınıf nesnesidir ve param değeri: {$this->param}";
+        }
+    };
+}
+
+echo session("kağıt");</code></pre>
+                    
+                    <p>Bu yaklaşım, geçici ve özel amaçlı nesneler oluşturmak için kullanışlıdır.</p>
+                `
+            },
+            {
+                id: 3,
+                title: "PHP PDO Oracle Tip Belirteçleri ve Çoklu Insert",
+                date: "2024-02-10",
+                tags: ["php", "pdo", "oracle", "sql"],
+                excerpt: "Oracle veritabanında PDO kullanarak tip belirteçleri ile çoklu insert işlemlerini nasıl yapacağınızı öğrenin.",
+                content: `
+                    <h3>PHP PDO Oracle Tip Belirteçleri ve Çoklu Insert</h3>
+                    <div class="article-meta">
+                        <span>10 Şubat 2024</span>
+                        <span>#php #pdo #oracle #sql</span>
+                    </div>
+                    <p>Oracle veritabanında PDO kullanırken veri tiplerini doğru belirtmek önemlidir.</p>
+                    
+                    <pre><code>$table = "Inventory";
+$sql = "INSERT INTO ".$table." (name,price,is_deleted,created_at) 
+        VALUES (?,?,?,TO_TIMESTAMP(?,'YYYY-MM-DD HH24:MI:SS.FF6'),?),
+               (?,?,?,TO_TIMESTAMP(?,'YYYY-MM-DD HH24:MI:SS.FF6'),?)";
+               
+$stmt = self::$pdo->prepare($sql);
+
+// İlk kayıt
+$stmt->bindValue(1, 'Kalem', PDO::PARAM_STR);
+$stmt->bindValue(2, 1220, PDO::PARAM_INT);
+$stmt->bindValue(3, null, PDO::PARAM_NULL);
+$stmt->bindValue(4, '2024-08-08', PDO::PARAM_STR);
+$stmt->bindValue(5, 'açıklama yazısı', PDO::PARAM_STR, strlen("açıklama yazısı"));
+
+// İkinci kayıt
+$stmt->bindValue(6, 'Defter', PDO::PARAM_STR);
+$stmt->bindValue(7, 1350, PDO::PARAM_INT);
+$stmt->bindValue(8, null, PDO::PARAM_NULL);
+$stmt->bindValue(9, '2024-08-08 13:10:05', PDO::PARAM_STR);
+$stmt->bindValue(10, 'açıklama yazısı', PDO::PARAM_STR, strlen("açıklama yazısı"));
+
+$stmt->execute();</code></pre>
+                    
+                    <p>Özellikle Oracle veritabanında veri türlerine göre işlem yapmak gerekiyor. Tarih alanları formatlamadan insert etmek veya where yazmak mümkün değil.</p>
+                `
+            },
+            {
+                id: 4,
+                title: "PHP Adapter Design Pattern",
+                date: "2024-02-25",
+                tags: ["php", "patterns", "oop"],
+                excerpt: "Adapter Design Pattern'i PHP'de nasıl kullanacağınızı ve farklı servisleri tek interface ile yönetmeyi öğrenin.",
+                content: `
+                    <h3>PHP Adapter Design Pattern</h3>
+                    <div class="article-meta">
+                        <span>25 Şubat 2024</span>
+                        <span>#php #patterns #oop</span>
+                    </div>
+                    <p>Adapter pattern, aynı işlemleri farklı araçlar ile yapmayı kolaylaştıran bir tasarım desendir.</p>
+                    
+                    <pre><code>interface FileInterface
+{
+    public function __construct($config);
+    public function write($path, $data);
+    public function read($path);
+}
+
+class FileAdapter
+{
+    public $adapter;
+    
+    public function __construct(FileInterface $adapter)
+    {
+        $this->adapter = $adapter;
+    }
+    
+    public function write($path, $data)
+    {
+        return $this->adapter->write($path, $data);
+    }
+}
+
+class S3 implements FileInterface
+{
+    public $config;
+    public $s3;
+    private $data;
+
+    public function __construct($config)
+    {
+        $this->config = $config;
+        /* s3 connect işleri burada yapılır */
+    }
+    
+    public function write($path, $data)
+    {
+        /* yazma işlemi burada yapılır */
+        return $this->s3->send($response);
+    }
+    
+    public function read($path)
+    {
+        /* okuma işlemi */
+    }
+}
+
+/* ÖRNEK */
+$s3 = new S3(["url" => $_ENV["S3_URL"]]);
+$adapter = new FileAdapter($s3);
+$result = $adapter->write("/files/1.jpg", $stream);</code></pre>
+                    
+                    <p>Genelde aynı işlemleri farklı araçlar ile yapmayı kolaylaştıran bir patterndir. Örnek olarak theleague flysystem bu patterni kullanır. Bir dosya işlemi yapılacak. Bu Amazon'a, FTP'ye veya başka bir servise yazılacak, okunacak. Demek ki her iki sınıfta da read ve write isminde iki method bulunması gerekiyormuş. Bunu interface ile sağlayabiliriz.</p>
+                `
+            },
+            {
+                id: 5,
+                title: "PHP Çalışma Zamanında Çıktı Üretmek",
+                date: "2024-03-12",
+                tags: ["php", "output"],
+                excerpt: "PHP'de ob_flush() ve flush() fonksiyonları kullanarak çalışma zamanında çıktı nasıl üretilir?",
+                content: `
+                    <h3>PHP Çalışma Zamanında Çıktı Üretmek (ob_flush() & flush())</h3>
+                    <div class="article-meta">
+                        <span>12 Mart 2024</span>
+                        <span>#php #output</span>
+                    </div>
+                    <p>PHP'de program çalışırken çıktı üretmek için <code>ob_flush()</code> ve <code>flush()</code> fonksiyonlarını kullanabilirsiniz.</p>
+                    
+                    <pre><code>ob_start(); 
+echo "başladı...";
+ob_flush();
+flush();
+
+$i = 1;
+while($i < 10) {
+    echo $i.". sırada";
+    ob_flush();
+    flush(); // burada flush fonksiyonunu çağırdığımız zaman 
+             // program çalışmaya devam ederken çıktı üretecektir
+    sleep(2);
+    $i++;
+}
+echo "bitti";</code></pre>
+                    
+                    <p>Başlangıçta <code>ob_start()</code> yapmazsak çıktı başlamadı gibi bir hata verecektir. Bu yöntem ile uzun süren işlemlerde kullanıcıya anlık geri bildirim verebilirsiniz.</p>
+                `
+            },
+            {
+                id: 6,
+                title: "PHP Fonksiyon İçerisinde Sınıf İterasyonu Tanımlamak",
+                date: "2024-03-28",
+                tags: ["php", "iterator", "oop"],
+                excerpt: "PHP'de fonksiyon içerisinde anonim sınıflarla IteratorAggregate nasıl kullanılır?",
+                content: `
+                    <h3>PHP Fonksiyon İçerisinde Sınıf İterasyonu Tanımlamak</h3>
+                    <div class="article-meta">
+                        <span>28 Mart 2024</span>
+                        <span>#php #iterator #oop</span>
+                    </div>
+                    <p>PHP'de fonksiyonların içerisinde anonim sınıflar tanımlayarak IteratorAggregate kullanabilirsiniz.</p>
+                    
+                    <pre><code>function session($param) {
+    return new class($param) implements \\IteratorAggregate {
+        private $param;
+
+        public function __construct($param) {
+            $this->param = $param;
+        }
+        
+        public function getIterator() : \\Traversable {
+            return new \\ArrayIterator($this->param);
+        }
+        
+        public function push($n) {
+            if (is_array($this->param)) {
+                return $this->param;
+            } else {
+                return "Adam {$this->param} ile kesildi. Kesilen sayı: $n";
+            }
+        }
+
+        public function __toString() {
+            if (is_array($this->param)) {
+                return $this->param;
+            } else {
+                return "Bu bir anonim sınıf nesnesidir ve param değeri: {$this->param}";
+            }
+        }
+    };
+}
+
+foreach(session(["aa"=>["title"=>"merhaba dünya"]]) as $b) {
+    echo $b["title"];
+}</code></pre>
+                    
+                    <p>Bu yöntem ile fonksiyon içerisinde tanımlanan sınıfları iterate edilebilir hale getirebilirsiniz.</p>
+                `
+            },
+            {
+                id: 7,
+                title: "Laravel toSql Çalıştırılabilir Query Elde Etmek",
+                date: "2024-04-15",
+                tags: ["laravel", "php", "sql"],
+                excerpt: "Laravel'de illuminate macro ile çalıştırılabilir SQL sorgusu nasıl elde edilir?",
+                content: `
+                    <h3>Laravel toSql Çalıştırılabilir Query Elde Etmek</h3>
+                    <div class="article-meta">
+                        <span>15 Nisan 2024</span>
+                        <span>#laravel #php #sql</span>
+                    </div>
+                    <p>Laravel'de illuminate macro kullanarak çalıştırılabilir SQL sorgusu elde edebilirsiniz.</p>
+                    
+                    <h4>AppServiceProvider.php'de Macro Tanımı</h4>
+                    <pre><code>public function boot(): void
+{
+    \\Illuminate\\Database\\Query\\Builder::macro('fullSql', fn (): string => str($this->toSql())
+        ->replaceArray('?', collect($this->getConnection()->prepareBindings($this->getBindings()))
+            ->map(fn ($binding) =>  $binding ? (str_contains($binding,"'") ?  $binding : "'".$binding."'") : "''")
+            ->toArray()
+        )
+    );
+}</code></pre>
+                    
+                    <h4>Kullanım Örneği</h4>
+                    <pre><code>$orders = DB::connection('mikro')
+    ->table("SIPARISLER",'siparis')
+    ->where('sip_evrakno_seri','not like',"'SSH'")
+    ->fullSql();
+
+echo $orders;
+// SELECT * FROM SIPARISLER siparis WHERE sip_evrakno_seri not like 'SSH'</code></pre>
+                    
+                    <p>Bu makro ile query builder'dan elde ettiğiniz sorguyu parametre değerleri ile birlikte alabilir ve doğrudan veritabanında çalıştırabilirsiniz.</p>
+                `
+            },
+            {
+                id: 8,
+                title: "Windows Regedit ile Protokol Magnetic Link Oluşturmak",
+                date: "2024-04-30",
+                tags: ["windows", "registry"],
+                excerpt: "Windows'da registry kayıtları ile özel protokol oluşturarak magnetic link nasıl yapılır?",
+                content: `
+                    <h3>Windows Regedit ile Protokol Magnetic Link Oluşturmak</h3>
+                    <div class="article-meta">
+                        <span>30 Nisan 2024</span>
+                        <span>#windows #registry</span>
+                    </div>
+                    <p>Kişisel bilgisayarınızda registry kayıtları ile özel protokoller oluşturabilirsiniz. Örneğin <code>rdp://125.45.84.54</code> adresi için bir link oluşturduğunuzda, Windows PC'de daha önce bağlandıysanız otomatik bağlanacaktır.</p>
+                    
+                    <h4>rdp_magnetic_link.reg</h4>
+                    <pre><code>Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\\Software\\Classes\\rdp]
+@="URL:rdp Protocol"
+"URL Protocol"="rdp://"
+
+[HKEY_CURRENT_USER\\Software\\Classes\\rdp\\shell]
+
+[HKEY_CURRENT_USER\\Software\\Classes\\rdp\\shell\\open]
+
+[HKEY_CURRENT_USER\\Software\\Classes\\rdp\\shell\\open\\command]
+@="cmd /V:ON /c set params=%1 && set params=!params:rdp://=! && start mstsc /v:\\"!params:/=!\\""</code></pre>
+                    
+                    <p>Bu registry dosyasını çalıştırdıktan sonra <code>rdp://192.168.1.100</code> gibi linkler otomatik olarak Remote Desktop Connection'ı açacaktır.</p>
+                `
+            },
+            {
+                id: 9,
+                title: "SQL Server STRING_AGG ve DISTINCT Kullanımı",
+                date: "2024-05-18",
+                tags: ["sql", "sqlserver"],
+                excerpt: "SQL Server'da MySQL'deki GROUP_CONCAT benzeri işlem ve DISTINCT kullanımı nasıl yapılır?",
+                content: `
+                    <h3>SQL Server STRING_AGG ve DISTINCT Kullanımı</h3>
+                    <div class="article-meta">
+                        <span>18 Mayıs 2024</span>
+                        <span>#sql #sqlserver</span>
+                    </div>
+                    <p>MySQL'de karşılığı <code>GROUP_CONCAT</code>. DISTINCT ile kullanmak istediğimizde <code>GROUP_CONCAT(DISTINCT isim)</code>. SQL Server DISTINCT ile kullanmaya izin vermiyor. Bunun için bir fonksiyon yazmanız gerekiyor.</p>
+                    
+                    <h4>Temel STRING_AGG Kullanımı</h4>
+                    <pre><code>SELECT STRING_AGG(turler.ad,',') as tur_ad, 
+       yiyecekler.id, 
+       yiyecekler.ad, 
+       kategoriler.ad as kategori_ad
+FROM yiyecekler 
+LEFT JOIN turler on turler.id = yiyecekler.tur_id
+LEFT JOIN kategoriler on kategoriler.id = yiyecekler.kategori_id
+GROUP BY yiyecekler.id, yiyecekler.ad, kategoriler.ad
+
+/*
++------------------+----+------+-------------+
+| tur_ad           | id | ad   | kategori_ad |
++------------------+----+------+-------------+
+| çekirdekli,tatlı | 1  | Elma | Meyve       |
+| çekirdekli,ekşi  | 2  | Erik | Meyve       |
++------------------+----+------+-------------+
+*/</code></pre>
+                    
+                    <h4>DISTINCT STRING_AGG Fonksiyonu</h4>
+                    <pre><code>CREATE FUNCTION [dbo].[fn_DistinctWords]
+(
+    @String NVARCHAR(MAX)  
+)
+RETURNS NVARCHAR(MAX)
+WITH SCHEMABINDING
+AS
+BEGIN
+    DECLARE @Result NVARCHAR(MAX);
+    WITH MY_CTE AS ( 
+        SELECT DISTINCT(value) 
+        FROM STRING_SPLIT(@String, ',') 
+        WHERE value != ''
+    )
+    SELECT @Result = STRING_AGG(value, ',') 
+    FROM MY_CTE
+    RETURN @Result
+END</code></pre>
+                    
+                    <h4>Kullanım</h4>
+                    <pre><code>SELECT dbo.fn_DistinctWords(STRING_AGG(kategoriler.ad,',')) as kategori_listesi
+FROM kategoriler
+INNER JOIN yiyecekler ON yiyecekler.kategori_id = kategoriler.id
+GROUP BY yiyecekler.id</code></pre>
+                `
+            },
+            {
+                id: 10,
+                title: "İki Koordinat Arası Mesafe Hesaplama - Haversine",
+                date: "2024-06-05",
+                tags: ["php", "gps", "algorithms"],
+                excerpt: "PHP'de Haversine formülü kullanarak iki GPS koordinatı arasındaki mesafe hesaplama",
+                content: `
+                    <h3>İki Koordinat Arası Mesafe Hesaplama - Haversine Formülü</h3>
+                    <div class="article-meta">
+                        <span>5 Haziran 2024</span>
+                        <span>#php #gps #algorithms</span>
+                    </div>
+                    <p>GPS koordinatları kullanarak iki nokta arasındaki kuşbakışı mesafeyi hesaplamak için Haversine formülünü kullanabilirsiniz.</p>
+                    
+                    <p><strong>Galata Kulesi:</strong> 41.025628938783775, 28.974229152583725<br>
+                    <strong>Kız Kulesi:</strong> 41.02113964212701, 29.004028658905778</p>
+                    
+                    <pre><code>function haversine($lat1, $lon1, $lat2, $lon2) {
+    $earth_radius = 6371; // km
+    
+    // Derece cinsinden farkları radyan cinsine çevir
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+    
+    // Haversine formülü
+    $a = sin($dLat / 2) * sin($dLat / 2) +
+         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+         sin($dLon / 2) * sin($dLon / 2);
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    
+    $distance = $earth_radius * $c;
+    
+    return $distance;
+}
+
+// Kullanım
+$mesafe = haversine(
+    41.025628938783775, 28.974229152583725, // Galata Kulesi
+    41.02113964212701, 29.004028658905778   // Kız Kulesi
+);
+
+echo "Mesafe: " . round($mesafe, 2) . " km"; // 2.55 km</code></pre>
+                    
+                    <p>Bu fonksiyon küresel koordinat sistemi kullandığı için yüksek doğruluk sağlar. Ayrıca bu mesafe verisini gerçek yol verisinden elde etmek istiyorsanız Open Street Map OSRM API'lerini kullanabilir kendi sunucunuza kurabilirsiniz.</p>
+                `
+            },
+            {
+                id: 11,
+                title: "Mesafe Matrisi Nedir? Ne İçin Kullanılır?",
+                date: "2024-06-22",
+                tags: ["gps", "algorithms"],
+                excerpt: "Mesafe matrisi kavramını ve kullanım alanlarını öğrenin. Performans optimizasyonu için neden önemli?",
+                content: `
+                    <h3>Mesafe Matrisi Nedir? Ne İçin Kullanılır?</h3>
+                    <div class="article-meta">
+                        <span>22 Haziran 2024</span>
+                        <span>#gps #algorithms</span>
+                    </div>
+                    <p>Bir dizi nokta arasındaki mesafeleri gösteren bir tablodur. Her hücre, belirli bir noktadan başka bir noktaya olan mesafeyi içerir.</p>
+                    
+                    <p>Bu tablo genelde tekrar hesap yapmamak için oluşturulur. Gerçek yol verilerinden hesap yapılacağı zaman gecikmelere sebebiyet verebilir. Ardı ardına binlerce işlem gereksiz maliyet doğurur. Bu matrisi oluşturarak sadece matematik hesabı yaparak hızı ve erişim kolaylığını hedefleyen bir standarttır.</p>
+                    
+                    <pre><code>+-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+|                   | Ayasofya | Topkapı Sarayı | Sultanahmet Camii | Yerebatan Sarnıcı | Galata Kulesi | Dolmabahçe Sarayı |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+| Ayasofya          | 0        | 0.0041         | 0.0046            | 0.0023            | 0.0181        | 0.0364            |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+| Topkapı Sarayı    | 0.0041   | 0              | 0.0087            | 0.0061            | 0.0167        | 0.0324            |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+| Sultanahmet Camii | 0.0046   | 0.0087         | 0                 | 0.0031            | 0.0203        | 0.0409            |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+| Yerebatan Sarnıcı | 0.0023   | 0.0061         | 0.0031            | 0                 | 0.0177        | 0.0379            |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+| Galata Kulesi     | 0.0181   | 0.0167         | 0.0203            | 0.0177            | 0             | 0.0290            |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+
+| Dolmabahçe Sarayı | 0.0364   | 0.0324         | 0.0409            | 0.0379            | 0.0290        | 0                 |
++-------------------+----------+----------------+-------------------+-------------------+---------------+-------------------+</code></pre>
+                    
+                    <p>Matris genellikle kare bir formda olur, çünkü her noktanın diğer her noktaya olan mesafesi hesaplanır.</p>
+                `
+            },
+            {
+                id: 12,
+                title: "GPS İzlerini Doğrultmak - OSRM Match",
+                date: "2024-07-08",
+                tags: ["php", "gps", "osrm"],
+                excerpt: "OSRM Match API kullanarak GPS izlerini gerçek yol ağları üzerinde nasıl doğrulayabilirsiniz?",
+                content: `
+                    <h3>GPS İzlerini Doğrultmak - OSRM Match Kullanımı</h3>
+                    <div class="article-meta">
+                        <span>8 Temmuz 2024</span>
+                        <span>#php #gps #osrm</span>
+                    </div>
+                    <p>OSRM, GPS izlerinin gerçek yol ağları üzerinde doğrulanmasını sağlar. "Match" fonksiyonu, topladığınız GPS verilerini, harita üzerinde gerçek yollarla eşleştirir.</p>
+                    
+                    <p>Bu işlem, hatalı GPS verilerini iyileştirmek ve doğru konum bilgileri sağlamak için kullanılır. Bu doğrulamayı sağlamak için GPS koordinatları, GPS zaman bilgisi, GPS doğruluk oranı (metre cinsinden) gerekir.</p>
+                    
+                    <pre><code>// OSRM Match API URL
+$osrm_api_url = "http://router.project-osrm.org/match/v1/driving/";
+
+// GPS koordinatları, zaman damgaları ve yarıçapları içeren örnek veri
+$coordinates = [
+    [13.388860, 52.517037],  // Örnek GPS koordinatları (longitude, latitude)
+    [13.397634, 52.529407]
+];
+
+$timestamps = [1609459200, 1609459800];  // Unix zaman damgaları (örnek)
+$radiuses = [10, 20];  // Her nokta için yarıçap (metre cinsinden)
+
+// JSON formatında veriyi oluştur
+$data = [
+    'coordinates' => $coordinates,
+    'timestamps'  => $timestamps,
+    'radiuses'    => $radiuses
+];
+
+// JSON verisini oluştur
+$json_data = json_encode($data);
+
+// cURL başlat
+$ch = curl_init();
+
+// cURL ayarları
+curl_setopt($ch, CURLOPT_URL, $osrm_api_url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+
+// API'den yanıt al
+$response = curl_exec($ch);
+
+// cURL hatalarını kontrol et
+if(curl_errno($ch)) {
+    echo 'cURL error: ' . curl_error($ch);
+} else {
+    // Yanıtı JSON formatında al ve çözümle
+    $decoded_response = json_decode($response, true);
+    if ($decoded_response) {
+        echo '&lt;pre&gt;';
+        print_r($decoded_response);
+        echo '&lt;/pre&gt;';
+    } else {
+        echo "Geçersiz yanıt alındı.";
+    }
+}
+
+// cURL oturumunu kapat
+curl_close($ch);</code></pre>
+                `
+            },
+            {
+                id: 13,
+                title: "Laravel Oracle/SQL Server WHERE IN Sınırlaması",
+                date: "2024-07-25",
+                tags: ["laravel", "oracle", "sql"],
+                excerpt: "WHERE IN sorgularında 1000 kayıt sınırını aşmanın Laravel'deki çözümü: chunk() metodu.",
+                content: `
+                    <h3>Laravel Oracle/SQL Server WHERE IN Kayıt Sınırlaması</h3>
+                    <div class="article-meta">
+                        <span>25 Temmuz 2024</span>
+                        <span>#laravel #oracle #sql</span>
+                    </div>
+                    <p><code>SELECT * FROM tasks WHERE IN(1,2,3......)</code> şeklinde genellikle 999 max kayıt seçebilmek için kullanıyoruz. Bu sayıyı geçtiğimizde SQL Server bize hata fırlatacaktır.</p>
+                    
+                    <p>Laravel Query Builder joinler için sıkça WHERE IN kullandığı için kayıt sayısı 1000'i geçiyorsa benzeri bir hata oluşur. Bunun önüne geçmek için en az maliyetle chunk etmeliyiz ilişkili veriyi.</p>
+                    
+                    <pre><code>$tasks_all = Task::where('created_at','<=', today()->endOfDay()->format('Y-m-d H:i:s'))->get();
+
+$tasks = collect();
+$tasks_all->chunk(999)->each(function($collection) use (&$tasks) {
+    $collection->load(['sub_tasks'=>function($q){ 
+        $q->withTrashed(); 
+    }]);
+    
+    // merge yaparak collection'a atama yapıyoruz
+    $tasks = $tasks->merge($collection);
+});
+
+dd($tasks);</code></pre>
+                    
+                    <p>Bu yöntem ile 1000 kayıt sınırlamasını aşabilir ve büyük veri setlerinde de verimli çalışabilirsiniz.</p>
+                `
+            },
+            {
+                id: 14,
+                title: "Laravel Log Viewer Kullanımı",
+                date: "2024-08-10",
+                tags: ["laravel", "php", "debugging"],
+                excerpt: "Laravel uygulamalarında log dosyalarını web arayüzünden görüntüleme ve yönetme yöntemleri.",
+                content: `
+                    <h3>Laravel Log Viewer Kullanımı</h3>
+                    <div class="article-meta">
+                        <span>10 Ağustos 2024</span>
+                        <span>#laravel #php #debugging</span>
+                    </div>
+                    <p>Laravel uygulamalarında log dosyalarını web arayüzünden görüntülemek için log viewer paketleri kullanabilirsiniz.</p>
+                    
+                    <h4>Kurulum</h4>
+                    <pre><code>composer require opcodesio/log-viewer
+php artisan log-viewer:publish</code></pre>
+                    
+                    <h4>Route Tanımlama</h4>
+                    <pre><code>// routes/web.php
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('logs', [\\Opcodes\\LogViewer\\Http\\Controllers\\LogViewerController::class, 'index']);
+});</code></pre>
+                    
+                    <h4>Log Yazma Örnekleri</h4>
+                    <pre><code>use Illuminate\\Support\\Facades\\Log;
+
+class ProductController extends Controller 
+{
+    public function store(Request $request)
+    {
+        try {
+            $product = Product::create($request->all());
+            
+            Log::info('Yeni ürün oluşturuldu', [
+                'product_id' => $product->id,
+                'user_id' => auth()->id(),
+                'data' => $request->all()
+            ]);
+            
+            return response()->json($product);
+            
+        } catch (\\Exception $e) {
+            Log::error('Ürün oluşturma hatası', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            return response()->json(['error' => 'Ürün oluşturulamadı'], 500);
+        }
+    }
+}</code></pre>
+                    
+                    <p>Log viewer ile hataları hızlıca tespit edip sistem durumunu takip edebilirsiniz.</p>
+                `
+            },
+            {
+                id: 15,
+                title: "Laravel Request Docs API Dokümantasyonu",
+                date: "2024-08-15",
+                tags: ["laravel", "api", "documentation"],
+                excerpt: "Laravel Request Docs paketi ile otomatik API dokümantasyonu oluşturma.",
+                content: `
+                    <h3>Laravel Request Docs API Dokümantasyonu</h3>
+                    <div class="article-meta">
+                        <span>15 Ağustos 2024</span>
+                        <span>#laravel #api #documentation</span>
+                    </div>
+                    <p>Laravel Request Docs paketi ile API endpoint'leriniz için otomatik dokümantasyon oluşturabilirsiniz.</p>
+                    
+                    <h4>Kurulum</h4>
+                    <pre><code>composer require rakutentech/laravel-request-docs</code></pre>
+                    
+                    <h4>Route Cache</h4>
+                    <pre><code>php artisan route:cache</code></pre>
+                    
+                    <h4>Dokümantasyona Erişim</h4>
+                    <pre><code>http://127.0.0.1:8000/request-docs</code></pre>
+                    
+                    <p>Bu paket sayesinde tüm API endpoint'lerinizi otomatik olarak dokümante edebilir ve test edebilirsiniz.</p>
+                `
+            },
+            {
+                id: 16,
+                title: "Linux Sunucuda PHP Servis Çalıştırma",
+                date: "2024-08-18",
+                tags: ["linux", "php", "systemd"],
+                excerpt: "Linux sunucuda PHP scriptlerini systemd ile servis haline getirme ve Oracle bağlantısı kurma.",
+                content: `
+                    <h3>Linux Sunucuda PHP Servis Çalıştırma - Systemd ve Oracle</h3>
+                    <div class="article-meta">
+                        <span>18 Ağustos 2024</span>
+                        <span>#linux #php #systemd</span>
+                    </div>
+                    <p>Linux sunucularında PHP scriptlerini arka planda servis olarak çalıştırmak için systemd kullanabilirsiniz. Oracle sürücü bağımlılığı ile çalışır. Hata aldığında 10 saniye sonra yeniden başlar. Sunucu kapatılıp açıldığında tekrar çalışır.</p>
+                    
+                    <h4>Systemd Servis Dosyası</h4>
+                    <pre><code># /etc/systemd/system/php-routing.service
+
+[Unit]
+Description=PHP Script Service
+After=network.target
+
+[Service]
+ExecStart=php /home/calculator/public/index.php --while
+Environment="LD_LIBRARY_PATH=/opt/oracle/instantclient_19_23"
+Restart=on-failure
+RestartSec=10
+User=root
+WorkingDirectory=/home/calculator/public
+StandardOutput=append:/var/log/php-calculator.log
+StandardError=append:/var/log/php-calculator-error.log
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+                    
+                    <h4>Servis Yönetimi</h4>
+                    <pre><code># Systemd'yi yeniden yükle
+sudo systemctl daemon-reload
+
+# Servisi etkinleştir (boot'ta otomatik başlasın)
+sudo systemctl enable php-routing.service
+
+# Servisi başlat
+sudo systemctl start php-routing.service
+
+# Servis durumunu kontrol et
+sudo systemctl status php-routing.service
+
+# Logları görüntüle
+sudo journalctl -u php-routing.service -f</code></pre>
+                    
+                    <h4>Log Takibi</h4>
+                    <pre><code># Servis loglarını takip için
+cat /var/log/php-routing.log
+cat /var/log/php-routing-error.log</code></pre>
+                    
+                    <p>Bu yapılandırma ile PHP scriptlerinizi güvenli ve stabil bir şekilde servis olarak çalıştırabilirsiniz.</p>
+                `
+            }
+        ];
+
+        let currentPost = null;
+        let currentFilter = 'all';
+        let expandedItems = new Set();
+        let searchTerm = '';
+
+        // Initialize
+        function init() {
+            renderPosts();
+            attachEventListeners();
+            updatePostCounter();
+        }
+
+        // Render posts
+        function renderPosts() {
+            const postList = document.getElementById('postList');
+            const filteredPosts = filterPosts();
+            
+            postList.innerHTML = filteredPosts.map(post => `
+                <li class="post-item ${expandedItems.has(post.id) ? 'expanded' : ''}" data-id="${post.id}">
+                    <div class="post-header">
+                        <h2 class="post-title">${highlightSearch(post.title)}</h2>
+                        <div class="post-meta">
+                            <span class="post-date">${formatDate(post.date)}</span>
+                            <div class="post-tags">
+                                ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="post-excerpt">${highlightSearch(post.excerpt)}</p>
+                </li>
+            `).join('');
+            
+            // Re-attach post click events
+            document.querySelectorAll('.post-item').forEach(item => {
+                item.addEventListener('click', handlePostClick);
+            });
+            
+            updatePostCounter();
+        }
+
+        // Filter posts by tag and search
+        function filterPosts() {
+            let filtered = posts;
+            
+            // Filter by tag
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(post => post.tags.includes(currentFilter));
+            }
+            
+            // Filter by search term
+            if (searchTerm) {
+                filtered = filtered.filter(post => 
+                    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+            }
+            
+            return filtered;
+        }
+
+        // Highlight search term
+        function highlightSearch(text) {
+            if (!searchTerm) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        // Update post counter
+        function updatePostCounter() {
+            const counter = document.getElementById('postCounter');
+            const filteredPosts = filterPosts();
+            counter.textContent = `${filteredPosts.length} / ${posts.length} yazı`;
+        }
+
+        // Handle post click
+        function handlePostClick(e) {
+            e.stopPropagation();
+            const postItem = e.currentTarget;
+            const postId = parseInt(postItem.dataset.id);
+            
+            if (expandedItems.has(postId)) {
+                // Second click - open full article
+                openArticle(postId);
+            } else {
+                // First click - expand excerpt
+                expandedItems.add(postId);
+                postItem.classList.add('expanded');
+            }
+        }
+
+        // Open article
+        function openArticle(postId) {
+            currentPost = posts.find(p => p.id === postId);
+            if (!currentPost) return;
+            
+            const articleView = document.getElementById('articleView');
+            const articleContent = document.getElementById('articleContent');
+            const keyboardHint = document.getElementById('keyboardHint');
+            
+            articleContent.innerHTML = currentPost.content;
+            articleView.classList.add('active');
+            keyboardHint.classList.add('visible');
+            
+            // Scroll to top
+            articleView.scrollTop = 0;
+        }
+
+        // Close article
+        function closeArticle() {
+            const articleView = document.getElementById('articleView');
+            const keyboardHint = document.getElementById('keyboardHint');
+            
+            articleView.classList.remove('active');
+            keyboardHint.classList.remove('visible');
+            currentPost = null;
+        }
+
+        // Navigate posts
+        function navigatePost(direction) {
+            if (!currentPost) return;
+            
+            const filteredPosts = filterPosts();
+            const currentIndex = filteredPosts.findIndex(p => p.id === currentPost.id);
+            let newIndex;
+            
+            if (direction === 'next') {
+                newIndex = (currentIndex + 1) % filteredPosts.length;
+            } else {
+                newIndex = currentIndex === 0 ? filteredPosts.length - 1 : currentIndex - 1;
+            }
+            
+            openArticle(filteredPosts[newIndex].id);
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            // Back button
+            document.getElementById('backButton').addEventListener('click', closeArticle);
+            
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                expandedItems.clear();
+                renderPosts();
+            });
+            
+            // Tag filters
+            document.querySelectorAll('.tag-filter').forEach(filter => {
+                filter.addEventListener('click', (e) => {
+                    const tag = e.target.dataset.tag;
+                    currentFilter = tag;
+                    
+                    // Update active state
+                    document.querySelectorAll('.tag-filter').forEach(f => f.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    // Clear expanded items when filtering
+                    expandedItems.clear();
+                    
+                    // Re-render posts
+                    renderPosts();
+                });
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeArticle();
+                } else if (e.key === 'ArrowLeft') {
+                    navigatePost('prev');
+                } else if (e.key === 'ArrowRight') {
+                    navigatePost('next');
+                } else if (e.key === '/' && document.activeElement !== document.getElementById('searchInput')) {
+                    e.preventDefault();
+                    document.getElementById('searchInput').focus();
+                }
+            });
+            
+            // Click outside to collapse expanded excerpts
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.post-item') && !e.target.closest('.search-input')) {
+                    expandedItems.clear();
+                    document.querySelectorAll('.post-item.expanded').forEach(item => {
+                        item.classList.remove('expanded');
+                    });
+                }
+            });
+        }
+
+        // Extract all unique tags
+        function getAllTags() {
+            const tagSet = new Set();
+            posts.forEach(post => {
+                post.tags.forEach(tag => tagSet.add(tag));
+            });
+            return Array.from(tagSet).sort();
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
